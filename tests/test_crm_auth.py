@@ -176,6 +176,7 @@ async def test_post_without_valid_csrf_gets_403(client, csrf, lead, sessionmaker
     form = dict(data) | ({"csrf_token": token} if token else {})
     response = await client.post(path.format(id=lead.id), data=form)
     assert response.status_code == 403
+    assert "HX-Refresh" not in response.headers
 
     async with sessionmaker() as fresh:
         assert await fresh.scalar(select(func.count()).select_from(Lead)) == 1
@@ -198,6 +199,20 @@ async def test_htmx_post_with_wrong_csrf_header_gets_403(client, csrf, lead):
     # A valid form token does not rescue a wrong header: the header wins when present.
     response = await client.post(f"/leads/{lead.id}/tags", data={"tag": "x", "csrf_token": csrf}, headers=headers)
     assert response.status_code == 403
+
+
+async def test_htmx_post_with_stale_token_asks_for_reload(client, csrf, lead, sessionmaker):
+    # Logging out and in again in another tab rotates the token; the open card still sends the old one.
+    await client.post("/logout", data={"csrf_token": csrf})
+    assert (await log_in(client)).status_code == 303
+    headers = {"HX-Request": "true", "X-CSRF-Token": csrf}
+    response = await client.post(f"/leads/{lead.id}/tags", data={"tag": "x"}, headers=headers)
+    assert response.status_code == 403
+    assert response.headers["HX-Refresh"] == "true"
+    async with sessionmaker() as fresh:
+        stored = await fresh.scalar(select(Lead).where(Lead.id == lead.id))
+        await fresh.refresh(stored, ["tags"])
+        assert [tag.name for tag in stored.tags] == ["вручную"]
 
 
 async def test_pages_carry_csrf_header_for_htmx(client, csrf):

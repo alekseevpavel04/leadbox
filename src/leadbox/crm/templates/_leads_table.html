@@ -4,9 +4,9 @@
   <thead>
     <tr>
       <th>Имя</th>
-      <th>Контакт</th>
-      <th>Запрос</th>
-      <th>Источник</th>
+      <th class="wide-only">Контакт</th>
+      <th class="wide-only">Запрос</th>
+      <th class="wide-only">Источник</th>
       <th>Теги</th>
       <th>Статус</th>
       <th>Создан, МСК</th>
@@ -20,12 +20,12 @@
         <a href="/leads/{{ lead.id }}">{{ lead.name or "без имени" }}</a>
         {% if form_incomplete(lead) %}<div class="mark">анкета не завершена</div>{% endif %}
       </td>
-      <td>{{ lead.contact or "" }}</td>
-      <td class="request">{{ (lead.request or "")|truncate(80) }}</td>
-      <td>{{ source_labels[lead.source] }}</td>
+      <td class="wide-only">{{ lead.contact or "" }}</td>
+      <td class="wide-only request">{{ (lead.request or "")|truncate(80) }}</td>
+      <td class="wide-only">{{ source_labels[lead.source] }}</td>
       <td>{% for tag in lead.tags %}<a class="chip" href="{{ tag_url(tag.name) }}">{{ tag.name }}</a> {% endfor %}</td>
-      <td>{{ status_labels[lead.status] }}</td>
-      <td class="nowrap">
+      <td class="status">{{ status_labels[lead.status] }}</td>
+      <td class="created nowrap">
         {% if wait %}<span class="badge">ждёт {{ wait }}</span><br>{% endif %}
         <span class="muted">{{ lead.created_at|msk }}</span>
       </td>

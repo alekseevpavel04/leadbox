@@ -127,3 +127,19 @@ button.remove:hover { color: #b00020; }
 .messages { list-style: none; padding: 0; margin: 0; max-width: 720px; }
 .message { padding: 8px 12px; margin-bottom: 8px; border-radius: 6px; background: #fff; border: 1px solid #ececec; }
 .message.out { background: #eef6ee; margin-left: 40px; }
+
+/* Phones and portrait tablets: the full table needs about 850 px, so below 900 the list turns into
+   one block per lead. Contact, request and source stay on the card (the source is also an automatic
+   tag), and the name, tags, status and waiting badge fit without scrolling sideways. */
+@media (max-width: 900px) {
+  .top { flex-wrap: wrap; gap: 8px 16px; }
+  .top nav { flex-wrap: wrap; gap: 8px 16px; }
+  main { padding: 12px 12px 32px; }
+
+  table.leads, .leads tbody, .leads tr, .leads td { display: block; }
+  .leads thead, .leads .wide-only { display: none; }
+  .leads tr { padding: 8px 10px; border-bottom: 1px solid #ececec; }
+  .leads td { padding: 2px 0; border: 0; overflow-wrap: anywhere; }
+  .leads td.status, .leads td.created { display: inline-block; vertical-align: top; margin-right: 12px; }
+  .leads .chip { white-space: normal; overflow-wrap: anywhere; }
+}

@@ -10,7 +10,7 @@
 
 <dl class="fields">
   <dt>Контакт</dt><dd>{{ lead.contact or "не указан" }}</dd>
-  {% if lead.tg_username %}<dt>Telegram</dt><dd>@{{ lead.tg_username.lstrip("@") }}</dd>{% endif %}
+  {% if lead.tg_username %}<dt>Username</dt><dd>@{{ lead.tg_username.lstrip("@") }}</dd>{% endif %}
   <dt>Запрос</dt><dd class="text">{{ lead.request or "не указан" }}</dd>
   <dt>Источник</dt><dd>{{ source_labels[lead.source] }}</dd>
   <dt>Кампания</dt><dd>{{ lead.campaign or "нет" }}</dd>

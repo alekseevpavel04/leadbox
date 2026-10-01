@@ -59,6 +59,10 @@ async def _login_required(request: Request, _exc: Exception) -> Response:
 
 
 async def _csrf_failed(request: Request, _exc: Exception) -> Response:
+    if is_htmx(request):
+        # htmx 2 does not swap a 403, so the click would do nothing. The token is stale (a new login in
+        # another tab rotates it), and a reload brings the current one, or the login page.
+        return Response(status_code=403, headers={"HX-Refresh": "true"})
     message = "Форма устарела. Обновите страницу и повторите."
     return render(request, "error.html", {"title": "Запрос отклонён", "message": message}, status_code=403)
 
@@ -72,7 +76,7 @@ async def _http_error(request: Request, exc: StarletteHTTPException) -> Response
     if exc.status_code == 404:
         context = {"title": "Страница не найдена", "message": "Такой страницы нет. Проверьте адрес."}
     elif exc.status_code == 405:
-        context = {"title": "Так нельзя", "message": "Этот адрес не открывается напрямую."}
+        context = {"title": "Страница для формы", "message": "Эта страница открывается только из формы."}
     else:
         return await http_exception_handler(request, exc)
     return render(request, "error.html", context, status_code=exc.status_code)

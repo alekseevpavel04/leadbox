@@ -66,6 +66,13 @@ async def login_submit(
     return render(request, "login.html", context, status_code=401)
 
 
+# POST /leads creates a lead; someone typing the address by hand expects the list.
+@public.get("/leads")
+async def leads_alias(request: Request) -> Response:
+    query = request.url.query
+    return redirect("/" + (f"?{query}" if query else ""))
+
+
 @router.post("/logout", dependencies=csrf)
 async def logout(request: Request) -> Response:
     log_out(request)

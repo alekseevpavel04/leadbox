@@ -292,6 +292,15 @@ async def test_get_on_post_only_url_is_readable(client):
     response = await client.get("/logout")
     assert response.status_code == 405
     assert "<html" in response.text
+    assert "Эта страница открывается только из формы." in response.text
+    assert "Так нельзя" not in response.text
+
+
+@pytest.mark.parametrize(("path", "location"), [("/leads", "/"), ("/leads?tag=x", "/?tag=x")])
+async def test_leads_address_opens_the_list(client, path, location):
+    response = await client.get(path)
+    assert response.status_code == 303
+    assert response.headers["location"] == location
 
 
 @pytest.mark.parametrize(
@@ -337,8 +346,8 @@ async def test_card_shows_moscow_time_and_message_history(client, session):
     assert "01.10.2026 21:30 МСК" in card
     assert "autumn" in card
     assert card.index("Здравствуйте") < card.index("Добрый день!")
-    assert "клиент, Telegram, 01.10.2026 22:00 МСК" in card
-    assert "менеджер, Telegram, 01.10.2026 22:05 МСК" in card
+    assert "клиент, личка, 01.10.2026 22:00 МСК" in card
+    assert "менеджер, личка, 01.10.2026 22:05 МСК" in card
 
 
 async def test_tags_page_counts_and_links(client, session):

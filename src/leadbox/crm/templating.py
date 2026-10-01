@@ -14,7 +14,7 @@ from leadbox.models import SOURCE_LABELS, Channel, Direction, FormStep, Lead, So
 MSK = timezone(timedelta(hours=3), "MSK")
 
 STATUS_LABELS = {Status.NEW: "новый", Status.IN_PROGRESS: "в работе", Status.WON: "успех", Status.LOST: "отказ"}
-CHANNEL_LABELS = {Channel.BOT: "бот", Channel.BUSINESS: "Telegram"}
+CHANNEL_LABELS = {Channel.BOT: "бот", Channel.BUSINESS: "личка"}
 DIRECTION_LABELS = {Direction.IN: "клиент", Direction.OUT: "менеджер"}
 
 
