@@ -8,12 +8,11 @@ from fastapi.templating import Jinja2Templates
 from starlette.responses import Response
 
 from leadbox.crm.auth import csrf_token, current_user
-from leadbox.models import Channel, Direction, FormStep, Lead, Source, Status, utcnow
+from leadbox.models import SOURCE_LABELS, Channel, Direction, FormStep, Lead, Source, Status, utcnow
 
 # Moscow has had no DST since 2014. A fixed offset also spares Windows the tzdata package.
 MSK = timezone(timedelta(hours=3), "MSK")
 
-SOURCE_LABELS = {Source.BOT: "бот", Source.TELEGRAM: "Telegram", Source.MANUAL: "вручную"}
 STATUS_LABELS = {Status.NEW: "новый", Status.IN_PROGRESS: "в работе", Status.WON: "успех", Status.LOST: "отказ"}
 CHANNEL_LABELS = {Channel.BOT: "бот", Channel.BUSINESS: "Telegram"}
 DIRECTION_LABELS = {Direction.IN: "клиент", Direction.OUT: "менеджер"}

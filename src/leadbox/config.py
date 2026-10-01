@@ -6,7 +6,7 @@ from sqlalchemy.engine import URL, make_url
 
 
 class Settings(BaseSettings):
-    # TG_API_ID / TG_API_HASH sit in the same .env but belong to nothing here, hence extra="ignore".
+    # extra="ignore": a shared .env may hold keys for other tools.
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
     bot_token: str = ""

@@ -4,11 +4,10 @@ from html import escape
 from aiogram import Bot
 from aiogram.types import LinkPreviewOptions
 
-from leadbox.models import Lead, Source
+from leadbox.models import SOURCE_LABELS, Lead
 
 logger = logging.getLogger(__name__)
 
-SOURCE_LABELS = {Source.BOT: "бот", Source.TELEGRAM: "Telegram", Source.MANUAL: "вручную"}
 REQUEST_PREVIEW_LEN = 300
 
 

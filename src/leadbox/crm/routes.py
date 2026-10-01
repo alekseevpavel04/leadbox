@@ -19,15 +19,12 @@ from leadbox.crm.auth import (
 )
 from leadbox.crm.templating import render
 from leadbox.db import get_session
-from leadbox.models import Lead, Source, Status
+from leadbox.models import NAME_MAX_LEN, REQUEST_MAX_LEN, Lead, Source, Status
 from leadbox.services.leads import create_lead, get_lead, list_leads, set_status
 from leadbox.services.tags import add_tag, canonical_tag, list_tags_with_counts, normalize_tag, remove_tag
 
-# Name and request limits match the bot form (SPEC 6), so a lead looks the same whichever way it came in.
 # The bot validates contacts by format; a manual contact is free text, capped only to keep the table readable.
-NAME_MAX_LEN = 64
 CONTACT_MAX_LEN = 100
-REQUEST_MAX_LEN = 1000
 # leads.id is a 32-bit integer on Postgres; a larger id from the URL would fail in the driver, not 404.
 MAX_LEAD_ID = 2**31 - 1
 

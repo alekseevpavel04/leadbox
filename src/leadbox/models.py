@@ -25,6 +25,14 @@ class Source(StrEnum):
     MANUAL = "manual"
 
 
+# One label per source for the CRM and the managers' group, so the two never disagree.
+SOURCE_LABELS = {Source.BOT: "бот", Source.TELEGRAM: "Telegram", Source.MANUAL: "вручную"}
+
+# Shared by the bot form and the manual form, so a lead looks the same whichever way it came in.
+NAME_MAX_LEN = 64
+REQUEST_MAX_LEN = 1000
+
+
 class Status(StrEnum):
     NEW = "new"
     IN_PROGRESS = "in_progress"

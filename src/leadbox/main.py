@@ -26,13 +26,15 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     await engine.dispose()
 
 
-app = FastAPI(title="Leadbox", lifespan=lifespan)
+# No /docs, /redoc or /openapi.json: everything but login, healthz and the webhook sits behind the CRM login.
+app = FastAPI(title="Leadbox", lifespan=lifespan, docs_url=None, redoc_url=None, openapi_url=None)
 app.include_router(telegram_router)
 install_crm(app, get_settings())
 
 
 # Pinged by UptimeRobot every 5 minutes to keep the Render free instance awake.
 # Must not touch the database: Neon's compute would never suspend and burn the free CU-hours.
-@app.get("/healthz")
+# HEAD as well: UptimeRobot checks with HEAD by default.
+@app.api_route("/healthz", methods=["GET", "HEAD"])
 async def healthz() -> dict[str, str]:
     return {"status": "ok"}

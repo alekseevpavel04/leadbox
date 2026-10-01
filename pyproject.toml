@@ -7,7 +7,7 @@ name = "leadbox"
 version = "0.1.0"
 description = "Mini CRM that collects leads from a Telegram bot and a connected Telegram Business account"
 requires-python = ">=3.11"
-# Unpinned, like the sibling projects; requirements.txt holds the exact versions Render installs.
+# Unpinned here; requirements.txt holds the exact versions Render installs.
 dependencies = [
   "aiogram>=3,<4",
   "alembic",

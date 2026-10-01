@@ -19,12 +19,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from leadbox.bot.contact import normalize_contact, shared_phone
 from leadbox.bot.transaction import Outbox
 from leadbox.config import Settings
-from leadbox.models import Channel, Direction, FormStep, Lead, Source
+from leadbox.models import NAME_MAX_LEN, REQUEST_MAX_LEN, Channel, Direction, FormStep, Lead, Source
 from leadbox.services.leads import SOURCE_TAGS, add_message, create_lead, get_open_lead_by_tg, update_lead_fields
 from leadbox.services.tags import add_tag
 
-NAME_MAX_LEN = 64
-REQUEST_MAX_LEN = 1000
 REQUEST_HINT_LEN = 200
 
 GREETING = (
