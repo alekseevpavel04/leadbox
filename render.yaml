@@ -1,0 +1,13 @@
+# Render Blueprint: one free web service in Frankfurt (closest to Neon eu-central-1).
+services:
+  - type: web
+    name: leadbox
+    runtime: python
+    plan: free
+    region: frankfurt
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn leadbox.main:app --app-dir src --host 0.0.0.0 --port $PORT
+    healthCheckPath: /healthz
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.4

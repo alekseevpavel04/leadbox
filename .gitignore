@@ -1,0 +1,21 @@
+# agent / working files, never published
+CLAUDE.md
+AGENTS.md
+.claude/
+orchestration/
+
+# secrets
+.env
+!.env.example
+*.session
+
+# python
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+.vscode/
+logs/
