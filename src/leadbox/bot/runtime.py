@@ -7,7 +7,7 @@ from aiogram.client.session.base import BaseSession
 from fastapi import FastAPI
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from leadbox.bot import dialog
+from leadbox.bot import business, dialog
 from leadbox.bot.transaction import UpdateTransactionMiddleware
 from leadbox.config import Settings
 
@@ -34,6 +34,7 @@ def build_dispatcher(sessionmaker: async_sessionmaker[AsyncSession], settings: S
     dispatcher = Dispatcher(disable_fsm=True, settings=settings)
     dispatcher.update.outer_middleware(UpdateTransactionMiddleware(sessionmaker, settings.manager_chat_id))
     dispatcher.include_router(dialog.build_router())
+    dispatcher.include_router(business.build_router())
     return dispatcher
 
 

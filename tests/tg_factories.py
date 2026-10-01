@@ -109,10 +109,13 @@ def message(user: dict[str, Any] | None = None, chat_type: str = "private", **co
         "from": user,
         **content,
     }
-    text = content.get("text", "")
-    if command := re.match(r"/\w+(@\w+)?", text):
-        body["entities"] = [{"type": "bot_command", "offset": 0, "length": command.end()}]
+    _add_command_entity(body)
     return {"message": body}
+
+
+def _add_command_entity(body: dict[str, Any]) -> None:
+    if command := re.match(r"/\w+(@\w+)?", body.get("text", "")):
+        body["entities"] = [{"type": "bot_command", "offset": 0, "length": command.end()}]
 
 
 def text(value: str, **kwargs: Any) -> dict[str, Any]:
@@ -169,6 +172,60 @@ def button(data: str, user: dict[str, Any] | None = None, message_id: int = 1) -
             },
         }
     }
+
+
+OWNER_ID = 2002
+CONNECTION_ID = "bc-test-connection"
+
+
+def owner_user() -> dict[str, Any]:
+    return tg_user(OWNER_ID, first_name="Павел", username="pavel_work")
+
+
+def business_connection(is_enabled: bool = True, owner: dict[str, Any] | None = None) -> dict[str, Any]:
+    owner = owner or owner_user()
+    return {
+        "business_connection": {
+            "id": CONNECTION_ID,
+            "user": owner,
+            "user_chat_id": owner["id"],
+            "date": MESSAGE_DATE,
+            "is_enabled": is_enabled,
+        }
+    }
+
+
+def business_message(
+    sender: dict[str, Any] | None = None,
+    client: dict[str, Any] | None = None,
+    *,
+    edited: bool = False,
+    message_id: int | None = None,
+    date: int = MESSAGE_DATE,
+    **content: Any,
+) -> dict[str, Any]:
+    """A message in a chat of the business account. `client` is the other person, so the chat is theirs.
+
+    The sender defaults to the client (incoming); pass `sender=owner_user()` for the owner's reply.
+    """
+    sender = sender or tg_user()
+    client = client or sender
+    body: dict[str, Any] = {
+        "message_id": next(_message_ids) if message_id is None else message_id,
+        "date": date,
+        "chat": {"id": client["id"], "type": "private", "first_name": client["first_name"]},
+        "from": sender,
+        "business_connection_id": CONNECTION_ID,
+        **content,
+    }
+    _add_command_entity(body)
+    if edited:
+        body["edit_date"] = date + 60
+    return {"edited_business_message" if edited else "business_message": body}
+
+
+def owner_reply(client: dict[str, Any] | None = None, **content: Any) -> dict[str, Any]:
+    return business_message(sender=owner_user(), client=client or tg_user(), **content)
 
 
 class TgHarness:
