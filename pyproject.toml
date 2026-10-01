@@ -7,10 +7,29 @@ name = "leadbox"
 version = "0.1.0"
 description = "Mini CRM that collects leads from a Telegram bot and a connected Telegram Business account"
 requires-python = ">=3.11"
-dependencies = ["fastapi", "uvicorn[standard]"]
+# Unpinned, like the sibling projects; requirements.txt holds the exact versions Render installs.
+dependencies = [
+  "aiogram>=3,<4",
+  "alembic",
+  "asyncpg",
+  "fastapi",
+  "itsdangerous",
+  "jinja2",
+  "pydantic-settings",
+  "python-multipart",
+  "sqlalchemy[asyncio]>=2",
+  "uvicorn[standard]",
+]
 
 [project.optional-dependencies]
-dev = ["httpx", "pytest", "ruff"]
+# Pinned here because nothing else pins them: requirements.txt is runtime only.
+dev = [
+  "aiosqlite==0.22.1",
+  "httpx==0.28.1",
+  "pytest==9.1.1",
+  "pytest-asyncio==1.4.0",
+  "ruff==0.16.9",
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -27,3 +46,5 @@ ignore = ["RUF001", "RUF002", "RUF003"]  # Cyrillic letters in strings/comments 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
