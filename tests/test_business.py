@@ -75,7 +75,7 @@ async def test_client_message_creates_a_telegram_lead(tg):
     assert message.sent_at == at(MESSAGE_DATE)
 
     [notification] = notifications(tg)
-    assert notification.startswith("<b>Новый лид: Telegram</b>")
+    assert notification.startswith("<b>Новый лид: личка</b>")
     assert f"https://leadbox.test/leads/{lead.id}" in notification
 
 
