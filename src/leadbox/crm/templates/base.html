@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Leadbox</title>
+  <link rel="stylesheet" href="/static/style.css">
+  {# Local copy of htmx 2.0.11 from unpkg, no CDN at runtime. #}
+  <script src="/static/htmx-2.0.11.min.js" defer></script>
+</head>
+<body{% if csrf_token %} hx-headers='{"X-CSRF-Token": "{{ csrf_token }}"}'{% endif %}>
+  <header class="top">
+    <a class="brand" href="/">Leadbox</a>
+    {% if user %}
+    <nav>
+      <a href="/">Лиды</a>
+      <a href="/tags">Теги</a>
+      <a href="/leads/new">Добавить лида</a>
+      <form method="post" action="/logout" class="inline">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <button type="submit" class="link">Выйти</button>
+      </form>
+    </nav>
+    {% endif %}
+  </header>
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block content %}
+{% set wait = waiting(lead) %}
+<p><a href="/">К списку</a></p>
+<h1>{{ lead.name or "Без имени" }}</h1>
+{% if wait %}<p><span class="badge">ждёт ответа {{ wait }}</span></p>{% endif %}
+{% if form_incomplete(lead) %}
+<p class="mark">Анкета не завершена: человек начал анкету в боте и не дошёл до конца.</p>
+{% endif %}
+
+<dl class="fields">
+  <dt>Контакт</dt><dd>{{ lead.contact or "не указан" }}</dd>
+  {% if lead.tg_username %}<dt>Telegram</dt><dd>@{{ lead.tg_username.lstrip("@") }}</dd>{% endif %}
+  <dt>Запрос</dt><dd class="text">{{ lead.request or "не указан" }}</dd>
+  <dt>Источник</dt><dd>{{ source_labels[lead.source] }}</dd>
+  <dt>Кампания</dt><dd>{{ lead.campaign or "нет" }}</dd>
+  <dt>Создан</dt><dd>{{ lead.created_at|msk }} МСК</dd>
+  {% if lead.first_response_at %}<dt>Первый ответ</dt><dd>{{ lead.first_response_at|msk }} МСК</dd>{% endif %}
+</dl>
+
+<section>
+  <h2>Статус</h2>
+  <form method="post" action="/leads/{{ lead.id }}/status" class="inline">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <select name="status" aria-label="Статус">
+      {% for value, label in status_labels.items() %}
+      <option value="{{ value }}"{% if lead.status == value %} selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit">Сохранить</button>
+  </form>
+  {% if status_error %}<p class="error">{{ status_error }}</p>{% endif %}
+</section>
+
+{% include "_tags.html" %}
+
+<section>
+  <h2>История сообщений</h2>
+  {% if lead.messages %}
+  <ol class="messages">
+    {% for message in lead.messages %}
+    <li class="message {{ message.direction }}">
+      <div class="muted">{{ direction_labels[message.direction] }}, {{ channel_labels[message.channel] }}, {{ message.sent_at|msk }} МСК</div>
+      <div class="text">{{ message.text or "[без текста]" }}</div>
+    </li>
+    {% endfor %}
+  </ol>
+  {% else %}
+  <p class="muted">Сообщений нет.</p>
+  {% endif %}
+</section>
+{% endblock %}

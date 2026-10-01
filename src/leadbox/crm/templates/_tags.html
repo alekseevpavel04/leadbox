@@ -1,0 +1,28 @@
+<section id="tags">
+  <h2>Теги</h2>
+  {% if lead.tags %}
+  <ul class="chips">
+    {% for tag in lead.tags %}
+    <li class="chip">
+      <a href="{{ tag_url(tag.name) }}">{{ tag.name }}</a>
+      <form method="post" action="/leads/{{ lead.id }}/tags/delete" class="inline"
+            hx-post="/leads/{{ lead.id }}/tags/delete" hx-target="#tags" hx-swap="outerHTML">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <input type="hidden" name="name" value="{{ tag.name }}">
+        <button type="submit" class="remove" title="Снять тег" aria-label="Снять тег {{ tag.name }}">&times;</button>
+      </form>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="muted">Тегов нет.</p>
+  {% endif %}
+  <form method="post" action="/leads/{{ lead.id }}/tags" class="inline"
+        hx-post="/leads/{{ lead.id }}/tags" hx-target="#tags" hx-swap="outerHTML">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <input name="tag" value="{{ tag_value or '' }}" placeholder="новый тег, можно через запятую"
+           aria-label="Новый тег"{% if refocus %} autofocus{% endif %}>
+    <button type="submit">Добавить</button>
+  </form>
+  {% if tag_error %}<p class="error">{{ tag_error }}</p>{% endif %}
+</section>

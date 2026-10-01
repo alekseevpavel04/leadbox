@@ -1,0 +1,40 @@
+{% if leads %}
+<p class="muted">Лидов: {{ leads|length }}. Новые сверху, список обновляется сам каждые 10 секунд.</p>
+<table class="leads">
+  <thead>
+    <tr>
+      <th>Имя</th>
+      <th>Контакт</th>
+      <th>Запрос</th>
+      <th>Источник</th>
+      <th>Теги</th>
+      <th>Статус</th>
+      <th>Создан, МСК</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for lead in leads %}
+    {% set wait = waiting(lead) %}
+    <tr>
+      <td>
+        <a href="/leads/{{ lead.id }}">{{ lead.name or "без имени" }}</a>
+        {% if form_incomplete(lead) %}<div class="mark">анкета не завершена</div>{% endif %}
+      </td>
+      <td>{{ lead.contact or "" }}</td>
+      <td class="request">{{ (lead.request or "")|truncate(80) }}</td>
+      <td>{{ source_labels[lead.source] }}</td>
+      <td>{% for tag in lead.tags %}<a class="chip" href="{{ tag_url(tag.name) }}">{{ tag.name }}</a> {% endfor %}</td>
+      <td>{{ status_labels[lead.status] }}</td>
+      <td class="nowrap">
+        {% if wait %}<span class="badge">ждёт {{ wait }}</span><br>{% endif %}
+        <span class="muted">{{ lead.created_at|msk }}</span>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% elif filters.active %}
+<p class="empty">Под эти фильтры лидов нет. <a href="/">Показать всех</a></p>
+{% else %}
+<p class="empty">Лидов пока нет. Они появятся здесь, когда кто-нибудь напишет боту. Можно <a href="/leads/new">добавить лида вручную</a>.</p>
+{% endif %}

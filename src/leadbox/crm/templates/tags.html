@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Теги</h1>
+{% if tags %}
+<table class="narrow">
+  <thead><tr><th>Тег</th><th>Лидов</th></tr></thead>
+  <tbody>
+    {% for name, count in tags %}
+    <tr><td><a class="chip" href="{{ tag_url(name) }}">{{ name }}</a></td><td>{{ count }}</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="empty">Тегов пока нет.</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Вход</h1>
+<form method="post" action="/login" class="stack narrow">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+  <input type="hidden" name="next" value="{{ next }}">
+  {% if error %}<p class="error">{{ error }}</p>{% endif %}
+  <label>Логин <input name="username" value="{{ username or '' }}" autocomplete="username" required autofocus></label>
+  <label>Пароль <input name="password" type="password" autocomplete="current-password" required></label>
+  <button type="submit">Войти</button>
+</form>
+{% endblock %}

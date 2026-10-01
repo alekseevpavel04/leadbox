@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Новый лид</h1>
+<form method="post" action="/leads" class="stack narrow">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+  {% if errors %}
+  <ul class="error">
+    {% for error in errors %}<li>{{ error }}</li>{% endfor %}
+  </ul>
+  {% endif %}
+  <label>Имя <input name="name" value="{{ form.name or '' }}" required autofocus></label>
+  <label>Контакт <input name="contact" value="{{ form.contact or '' }}" placeholder="+7..., @username или email"></label>
+  <label>Запрос <textarea name="request_text" rows="4">{{ form.request_text or '' }}</textarea></label>
+  <label>Теги <input name="tags" value="{{ form.tags or '' }}" placeholder="через запятую: горячий, сайт"></label>
+  <p class="muted">Тег «вручную» поставится сам.</p>
+  <button type="submit">Создать</button>
+</form>
+{% endblock %}

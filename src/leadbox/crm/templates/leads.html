@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Лиды</h1>
+<form method="get" action="/" class="filters">
+  <label>Тег
+    <input name="tag" value="{{ filters.tag }}" list="tag-options" placeholder="любой">
+  </label>
+  <datalist id="tag-options">
+    {% for name in tag_options %}<option value="{{ name }}">{% endfor %}
+  </datalist>
+  <label>Статус
+    <select name="status">
+      <option value="">любой</option>
+      {% for value, label in status_labels.items() %}
+      <option value="{{ value }}"{% if filters.status == value %} selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>Источник
+    <select name="source">
+      <option value="">любой</option>
+      {% for value, label in source_labels.items() %}
+      <option value="{{ value }}"{% if filters.source == value %} selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <button type="submit">Показать</button>
+  {% if filters.active %}<a href="/">Сбросить</a>{% endif %}
+</form>
+<div id="leads" hx-get="{{ table_url }}" hx-trigger="every 10s" hx-swap="innerHTML">
+  {% include "_leads_table.html" %}
+</div>
+{% endblock %}
