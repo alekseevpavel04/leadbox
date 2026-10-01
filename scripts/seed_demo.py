@@ -1,6 +1,6 @@
 """Fill the CRM with a few demo leads tagged «демо», so a reviewer does not open an empty list.
 
-Run once against the database from DATABASE_URL: `PYTHONPATH=src python scripts/seed_demo.py`.
+Run once against the database from DATABASE_URL: `python scripts/seed_demo.py` (after `pip install -e .`).
 A second run does nothing while any lead tagged «демо» exists. Timestamps are the real moment of
 seeding: the leads are marked as demo instead of pretending to have come in earlier.
 """

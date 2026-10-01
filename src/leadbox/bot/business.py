@@ -1,4 +1,5 @@
-"""Item 2: chats of a work account the bot is connected to through Telegram Business.
+"""Item 2 of the assignment, a regular Telegram account: chats of a work account the bot is
+connected to through Telegram Business.
 
 The bot only listens here. It never writes into a business chat: the person is talking to the
 manager, not to a bot, and every reply in these chats is the manager's own.

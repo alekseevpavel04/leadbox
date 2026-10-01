@@ -1,10 +1,10 @@
 """Check the public texts against the task's literal limits.
 
-Length is counted the way QUALITY.md section 4 defines a page: visible text with spaces, markdown
+Length is counted the way this project defines a page: visible text with spaces, markdown
 markup removed, link text and image captions kept, HTML comments dropped. One A4 page at 11 pt is
 3000 characters, so the product sketch is 1500-3000 and the review is at most 1500.
 
-Also fails on an em dash in any public text and on an image without a caption: the alt text must be
+Also fails on an em dash in README, PRODUCT and REVIEW and on an image without a caption: the alt text must be
 non-empty and the next non-blank line must be a caption paragraph, because the AI screener may not
 see images at all.
 

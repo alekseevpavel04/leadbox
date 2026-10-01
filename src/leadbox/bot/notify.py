@@ -34,7 +34,7 @@ async def send_notification(bot: Bot, chat_id: int | None, text: str) -> bool:
         logger.warning("MANAGER_CHAT_ID is not set, lead notification skipped")
         return False
     # Called after commit: the lead is saved and must not depend on the group being reachable,
-    # so any failure is logged and dropped. Raising would only lose the replies queued after it.
+    # so any failure is logged and dropped. Raising would only lose the notifications queued after it.
     try:
         await bot.send_message(
             chat_id=chat_id,

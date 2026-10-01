@@ -48,3 +48,5 @@ testpaths = ["tests"]
 pythonpath = ["src"]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
+# FastAPI's TestClient still wraps httpx; Starlette asks to move to httpx2, which FastAPI does not use yet.
+filterwarnings = ["ignore:Using `httpx` with `starlette.testclient` is deprecated"]
