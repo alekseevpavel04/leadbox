@@ -1,7 +1,7 @@
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from leadbox.models import BusinessConnection, Lead, Message, ProcessedUpdate
+from leadbox.models import BusinessConnection, Channel, Lead, Message, ProcessedUpdate
 from leadbox.services.common import insert_ignoring_duplicate
 
 
@@ -27,12 +27,15 @@ async def get_business_connection(session: AsyncSession, id: str) -> BusinessCon
     return await session.get(BusinessConnection, id)
 
 
-async def update_message_text(session: AsyncSession, *, tg_user_id: int, tg_message_id: int, text: str | None) -> None:
-    # Message ids are unique only within a chat, so the edit is matched through the lead's user.
+async def update_message_text(
+    session: AsyncSession, *, channel: Channel, tg_user_id: int, tg_message_id: int, text: str | None
+) -> None:
+    # Message ids are unique only within a chat: the bot chat and the business chat with the same
+    # person count separately. So the edit is matched by channel and through the lead's user.
     lead_ids = select(Lead.id).where(Lead.tg_user_id == tg_user_id)
     await session.execute(
         update(Message)
-        .where(Message.tg_message_id == tg_message_id, Message.lead_id.in_(lead_ids))
+        .where(Message.channel == channel, Message.tg_message_id == tg_message_id, Message.lead_id.in_(lead_ids))
         .values(text=text)
         .execution_options(synchronize_session=False)
     )

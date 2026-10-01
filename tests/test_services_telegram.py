@@ -45,7 +45,20 @@ async def test_edit_touches_only_the_same_chat(session):
             tg_message_id=5,
         )
     anna_id, boris_id = anna.id, boris.id
-    await update_message_text(session, tg_user_id=1, tg_message_id=5, text="new")
+    await update_message_text(session, channel=Channel.BUSINESS, tg_user_id=1, tg_message_id=5, text="new")
     session.expire_all()
     assert [m.text for m in (await get_lead(session, anna_id)).messages] == ["new"]
     assert [m.text for m in (await get_lead(session, boris_id)).messages] == ["old"]
+
+
+async def test_edit_in_business_chat_leaves_bot_chat_message_alone(session):
+    lead = await create_lead(session, source=Source.BOT, tg_user_id=1)
+    for channel in (Channel.BOT, Channel.BUSINESS):
+        await add_message(
+            session, lead, direction=Direction.IN, channel=channel, text="old", sent_at=utcnow(), tg_message_id=5
+        )
+    lead_id = lead.id
+    await update_message_text(session, channel=Channel.BUSINESS, tg_user_id=1, tg_message_id=5, text="new")
+    session.expire_all()
+    texts = {m.channel: m.text for m in (await get_lead(session, lead_id)).messages}
+    assert texts == {Channel.BOT: "old", Channel.BUSINESS: "new"}
