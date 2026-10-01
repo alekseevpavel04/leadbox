@@ -4,10 +4,6 @@ from typing import Any, Literal
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy.engine import URL, make_url
 
-# Used when DATABASE_URL is empty: a local file, so `alembic upgrade head` followed by uvicorn
-# gives a working app without Postgres. Tests never use it, they build their own in-memory engine.
-LOCAL_SQLITE_URL = "sqlite+aiosqlite:///leadbox.db"
-
 
 class Settings(BaseSettings):
     # TG_API_ID / TG_API_HASH sit in the same .env but belong to nothing here, hence extra="ignore".
@@ -38,7 +34,9 @@ def async_database_url(raw: str) -> tuple[URL, dict[str, Any]]:
     same libpq semantics, and channel_binding is dropped because asyncpg cannot do it.
     """
     if not raw:
-        return make_url(LOCAL_SQLITE_URL), {}
+        # No silent fallback to a local SQLite file: on the stand that would be an empty database
+        # wiped on every restart. Local work names SQLite explicitly (see .env.example).
+        raise RuntimeError("DATABASE_URL is not set")
     url = make_url(raw)
     if url.drivername not in ("postgresql", "postgres", "postgresql+asyncpg"):
         return url, {}

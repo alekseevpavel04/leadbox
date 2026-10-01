@@ -1,4 +1,6 @@
-from leadbox.config import LOCAL_SQLITE_URL, Settings, async_database_url
+import pytest
+
+from leadbox.config import Settings, async_database_url
 
 
 def test_neon_url_is_converted_for_asyncpg():
@@ -26,9 +28,14 @@ def test_postgres_url_without_sslmode_gets_no_ssl_args():
     assert connect_args == {}
 
 
-def test_empty_url_means_local_sqlite():
-    url, connect_args = async_database_url("")
-    assert url.render_as_string() == LOCAL_SQLITE_URL
+def test_empty_url_is_refused():
+    with pytest.raises(RuntimeError, match="DATABASE_URL"):
+        async_database_url("")
+
+
+def test_sqlite_url_is_kept_for_local_work():
+    url, connect_args = async_database_url("sqlite+aiosqlite:///leadbox.db")
+    assert url.drivername == "sqlite+aiosqlite"
     assert connect_args == {}
 
 
