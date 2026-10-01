@@ -1,6 +1,7 @@
 from functools import lru_cache
 from typing import Any, Literal
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy.engine import URL, make_url
 
@@ -19,6 +20,12 @@ class Settings(BaseSettings):
     crm_user: str = ""
     crm_password: str = ""
     bot_mode: Literal["webhook", "polling"] = "webhook"
+
+    @field_validator("manager_chat_id", mode="before")
+    @classmethod
+    def _empty_chat_id_means_none(cls, value: Any) -> Any:
+        # `MANAGER_CHAT_ID=` copied from .env.example means "no notifications", not a parse error.
+        return None if value == "" else value
 
 
 @lru_cache

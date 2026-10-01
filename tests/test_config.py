@@ -49,3 +49,8 @@ def test_unused_telegram_client_keys_are_ignored(monkeypatch):
 def test_settings_in_tests_do_not_come_from_dotenv(settings):
     assert settings.database_url == ""
     assert settings.bot_token.startswith("123456:TEST")
+
+
+def test_empty_manager_chat_id_means_no_notifications(monkeypatch):
+    monkeypatch.setenv("MANAGER_CHAT_ID", "")
+    assert Settings(_env_file=None).manager_chat_id is None
