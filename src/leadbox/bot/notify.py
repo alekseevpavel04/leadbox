@@ -30,10 +30,10 @@ def lead_notification(lead: Lead, public_base_url: str) -> str:
     return "\n".join(lines)
 
 
-async def send_notification(bot: Bot, chat_id: int | None, text: str) -> None:
+async def send_notification(bot: Bot, chat_id: int | None, text: str) -> bool:
     if chat_id is None:
         logger.warning("MANAGER_CHAT_ID is not set, lead notification skipped")
-        return
+        return False
     # Called after commit: the lead is saved and must not depend on the group being reachable,
     # so any failure is logged and dropped. Raising would only lose the replies queued after it.
     try:
@@ -45,3 +45,5 @@ async def send_notification(bot: Bot, chat_id: int | None, text: str) -> None:
         )
     except Exception:
         logger.exception("failed to send lead notification to chat %s", chat_id)
+        return False
+    return True

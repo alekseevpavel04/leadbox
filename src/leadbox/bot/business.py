@@ -11,7 +11,6 @@ from aiogram.enums import ChatType, ContentType
 from aiogram.types import BusinessConnection, Message, User
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from leadbox.bot.notify import lead_notification
 from leadbox.bot.transaction import Outbox
 from leadbox.config import Settings
 from leadbox.models import Channel, Direction, Lead, Source
@@ -117,7 +116,6 @@ async def _on_client_message(session: AsyncSession, outbox: Outbox, settings: Se
             tg_user_id=user.id,
             tg_username=user.username,
         )
-        outbox.notifications.append(lead_notification(lead, settings.public_base_url))
     else:
         # The same person may have filled the bot's form before: one lead, both sources as tags.
         if SOURCE_TAGS[Source.TELEGRAM] not in {tag.name for tag in lead.tags}:
@@ -125,6 +123,8 @@ async def _on_client_message(session: AsyncSession, outbox: Outbox, settings: Se
         if lead.tg_username != user.username:
             await update_lead_fields(session, lead, tg_username=user.username)
     await _record(session, lead, message, Direction.IN)
+    # A new lead, or one whose bot form was dropped before it reached the managers.
+    outbox.notify(lead, settings.public_base_url)
 
 
 async def _record(session: AsyncSession, lead: Lead, message: Message, direction: Direction) -> None:

@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -75,6 +75,11 @@ async def mark_first_response(session: AsyncSession, lead: Lead, at: datetime) -
     if lead.first_response_at is None:
         lead.first_response_at = at
         await session.flush()
+
+
+async def mark_notified(session: AsyncSession, lead_id: int, at: datetime) -> None:
+    # By id, not by Lead: it runs after the update's own transaction, in a session of its own.
+    await session.execute(update(Lead).where(Lead.id == lead_id, Lead.notified_at.is_(None)).values(notified_at=at))
 
 
 async def add_message(

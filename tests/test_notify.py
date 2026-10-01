@@ -56,11 +56,18 @@ def test_long_request_is_cut_before_escaping():
     assert 'href="https://leadbox.test/leads/7"' in notification
 
 
+async def test_delivered_notification_is_recorded(tg):
+    await fill_form(tg, "Анна")
+    assert (await tg.only_lead()).notified_at is not None
+
+
 async def test_failed_notification_keeps_the_lead(tg, caplog):
     tg.api.fail_chats.add(MANAGER_CHAT_ID)
     with caplog.at_level(logging.ERROR, logger="leadbox.bot.notify"):
         await fill_form(tg, "Анна")
-    assert (await tg.only_lead()).form_step == FormStep.DONE
+    lead = await tg.only_lead()
+    assert lead.form_step == FormStep.DONE
+    assert lead.notified_at is None
     assert tg.api.last_text() == dialog.DONE
     assert "failed to send lead notification" in caplog.text
 

@@ -17,7 +17,6 @@ from aiogram.types import (
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from leadbox.bot.contact import normalize_contact, shared_phone
-from leadbox.bot.notify import lead_notification
 from leadbox.bot.transaction import Outbox
 from leadbox.config import Settings
 from leadbox.models import Channel, Direction, FormStep, Lead, Source
@@ -180,7 +179,7 @@ async def on_callback(callback: CallbackQuery, session: AsyncSession, outbox: Ou
         await _accept_request(session, outbox, lead, user, lead.request)
     elif step == FormStep.CONFIRM and data == CB_SEND:
         await update_lead_fields(session, lead, form_step=FormStep.DONE)
-        outbox.notifications.append(lead_notification(lead, settings.public_base_url))
+        outbox.notify(lead, settings.public_base_url)
         _send(outbox, user.id, DONE)
     elif step == FormStep.CONFIRM and data == CB_EDIT:
         await update_lead_fields(session, lead, form_step=FormStep.NAME)

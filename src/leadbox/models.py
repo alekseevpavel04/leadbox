@@ -130,6 +130,9 @@ class Lead(Base):
     form_step: Mapped[FormStep | None] = mapped_column(_str_enum(FormStep))
     created_at: Mapped[datetime] = mapped_column(default=utcnow)
     first_response_at: Mapped[datetime | None]
+    # When the managers' group accepted the notification about this lead; null until then,
+    # including after a failed send, so the lead's next message tries again.
+    notified_at: Mapped[datetime | None]
     updated_at: Mapped[datetime] = mapped_column(default=utcnow, onupdate=utcnow)
 
     tags: Mapped[list["Tag"]] = relationship(secondary=lead_tags, order_by="Tag.name")

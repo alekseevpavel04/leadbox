@@ -3,6 +3,7 @@ from datetime import UTC, datetime
 import pytest
 from aiogram.methods import SendMessage
 
+from leadbox.bot import dialog
 from leadbox.models import Channel, Direction, FormStep, Source, Status
 from leadbox.services.leads import get_lead, set_status
 from leadbox.services.telegram import get_business_connection
@@ -14,6 +15,7 @@ from tg_factories import (
     TgHarness,
     business_connection,
     business_message,
+    button,
     owner_reply,
     text,
     tg_user,
@@ -230,8 +232,22 @@ async def test_person_from_the_bot_form_keeps_one_lead_with_both_tags(tg):
         (Channel.BUSINESS, Direction.IN),
         (Channel.BUSINESS, Direction.OUT),
     ]
-    # The lead is not new, so no notification, and nothing is said to the person.
-    assert len(tg.api.calls) == sent_before
+    # The dropped form never reached the managers, so this message does; the person hears nothing.
+    [notification] = notifications(tg)
+    assert notification.startswith("<b>Новый лид: бот</b>")
+    assert len(tg.api.calls) == sent_before + 1
+
+
+async def test_lead_announced_from_business_is_not_announced_again_by_the_form(tg):
+    await tg.send(text("/start"))
+    await tg.send(business_message(client(), text="Решил написать напрямую"))
+    await tg.send(text("Анна"))
+    await tg.send(text("@anna_tg"))
+    await tg.send(text("Нужна реклама"))
+    await tg.send(button(dialog.CB_SEND))
+
+    assert (await tg.only_lead()).form_step == FormStep.DONE
+    assert len(notifications(tg)) == 1
 
 
 async def test_closed_lead_gives_way_to_a_new_one(tg):

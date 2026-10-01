@@ -9,7 +9,9 @@ from aiogram.methods import TelegramMethod
 from aiogram.types import TelegramObject, Update
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from leadbox.bot.notify import send_notification
+from leadbox.bot.notify import lead_notification, send_notification
+from leadbox.models import Lead, utcnow
+from leadbox.services.leads import mark_notified
 from leadbox.services.telegram import mark_update_processed
 
 logger = logging.getLogger(__name__)
@@ -24,7 +26,12 @@ class Outbox:
     """
 
     replies: list[TelegramMethod[Any]] = field(default_factory=list)
-    notifications: list[str] = field(default_factory=list)
+    notifications: list[tuple[int, str]] = field(default_factory=list)
+
+    def notify(self, lead: Lead, public_base_url: str) -> None:
+        """Queue the managers' group notification, once per lead whichever way it came in."""
+        if lead.notified_at is None:
+            self.notifications.append((lead.id, lead_notification(lead, public_base_url)))
 
 
 class UpdateTransactionMiddleware(BaseMiddleware):
@@ -63,5 +70,8 @@ class UpdateTransactionMiddleware(BaseMiddleware):
                 await bot(method)
             except TelegramAPIError:
                 logger.exception("Bot API call %s failed after commit", type(method).__name__)
-        for text in outbox.notifications:
-            await send_notification(bot, self.manager_chat_id, text)
+        for lead_id, text in outbox.notifications:
+            if await send_notification(bot, self.manager_chat_id, text):
+                async with self.sessionmaker() as session:
+                    await mark_notified(session, lead_id, utcnow())
+                    await session.commit()
