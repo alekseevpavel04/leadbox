@@ -1,4 +1,5 @@
 import re
+from datetime import timedelta
 
 from aiogram import F, Router
 from aiogram.enums import ChatType
@@ -24,6 +25,8 @@ from leadbox.services.leads import SOURCE_TAGS, add_message, create_lead, get_op
 from leadbox.services.tags import add_tag
 
 REQUEST_HINT_LEN = 200
+# Telegram clients send a text over 4096 characters as several messages, all within a second or two.
+SPLIT_TEXT_GAP = timedelta(seconds=2)
 
 GREETING = (
     "Здравствуйте! Здесь можно оставить заявку агентству: три коротких вопроса, около минуты.\n"
@@ -51,7 +54,7 @@ UNKNOWN_COMMAND = "Такой команды нет."
 NAME_TOO_LONG = f"Имя длинновато: уложитесь, пожалуйста, в {NAME_MAX_LEN} символа."
 REQUEST_TOO_LONG = (
     f"Текст длиннее {REQUEST_MAX_LEN} символов (сейчас {{length}}). "
-    "Сократите, пожалуйста, подробности можно обсудить с менеджером."
+    "Сократите, пожалуйста: подробности можно обсудить с менеджером."
 )
 CONTACT_INVALID = "Не получилось распознать контакт. Напишите, например, +7 999 123-45-67, @username или name@mail.ru."
 CONTACT_FOREIGN = "Это чужой контакт. Нажмите «Поделиться номером», чтобы отправить свой, или напишите контакт текстом."
@@ -234,10 +237,35 @@ async def _on_request(session: AsyncSession, outbox: Outbox, lead: Lead, message
         _send(outbox, user.id, *_prompt(lead, user, TEXT_ONLY))
         return
     request = message.text.strip()
-    if len(request) > REQUEST_MAX_LEN:
-        _send(outbox, user.id, *_prompt(lead, user, REQUEST_TOO_LONG.format(length=len(request))))
+    length = len(request) + await _earlier_pieces_length(lead, message)
+    if length > REQUEST_MAX_LEN:
+        _send(outbox, user.id, *_prompt(lead, user, REQUEST_TOO_LONG.format(length=length)))
         return
     await _accept_request(session, outbox, lead, user, request)
+
+
+async def _earlier_pieces_length(lead: Lead, message: Message) -> int:
+    """Length of the text this message may be the last piece of, without the message itself.
+
+    A client cuts a long text into 4096-character pieces sent at once. Every piece but the last is
+    over the limit and rejected; without this, the short last piece would pass as a request of its
+    own. A text over the limit is not accepted at any step, so long messages right before this one
+    can only be earlier pieces of the same rejected text.
+    """
+    earlier = [
+        m
+        for m in await lead.awaitable_attrs.messages
+        if m.direction == Direction.IN and m.channel == Channel.BOT and m.tg_message_id != message.message_id
+    ]
+    length = 0
+    next_date = message.date
+    for piece in reversed(earlier):
+        piece_length = len(piece.text.strip()) if piece.text else 0
+        if piece_length <= REQUEST_MAX_LEN or next_date - piece.sent_at > SPLIT_TEXT_GAP:
+            break
+        length += piece_length
+        next_date = piece.sent_at
+    return length
 
 
 async def _accept_request(session: AsyncSession, outbox: Outbox, lead: Lead, user: User, request: str) -> None:

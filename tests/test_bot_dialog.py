@@ -205,24 +205,59 @@ async def test_foreign_shared_contact_is_rejected(tg, owner_id):
     assert tg.api.last_text().startswith(dialog.CONTACT_FOREIGN)
 
 
-@pytest.mark.parametrize("length", [1001, 5000])
-async def test_too_long_request_asks_to_shorten(tg, length):
+async def reach_request_step(tg):
     await tg.send(text("/start"))
     await tg.send(text("Анна"))
     await tg.send(text("@anna_tg"))
-    await tg.send(text("а" * length))
+
+
+async def test_too_long_request_asks_to_shorten(tg):
+    await reach_request_step(tg)
+    await tg.send(text("а" * 1001))
     lead = await tg.only_lead()
     assert lead.request is None
     assert lead.form_step == FormStep.REQUEST
-    assert tg.api.last_text().startswith(dialog.REQUEST_TOO_LONG.format(length=length))
+    assert tg.api.last_text().startswith(dialog.REQUEST_TOO_LONG.format(length=1001))
+
+
+@pytest.mark.parametrize("gap", [0, 1, 2])
+async def test_text_split_by_the_client_is_rejected_as_a_whole(tg, gap):
+    # 5000 characters leave a Telegram client as two messages, 4096 and 904, within a second or two.
+    await reach_request_step(tg)
+    await tg.send(text("а" * 4096, date=MESSAGE_DATE))
+    await tg.send(text("б" * 904, date=MESSAGE_DATE + gap))
+
+    lead = await tg.only_lead()
+    assert lead.request is None
+    assert lead.form_step == FormStep.REQUEST
+    answers = tg.api.sent_texts()[-2:]
+    assert answers[0].startswith(dialog.REQUEST_TOO_LONG.format(length=4096))
+    assert answers[1].startswith(dialog.REQUEST_TOO_LONG.format(length=5000))
+
+
+async def test_text_split_in_three_counts_every_piece(tg):
+    await reach_request_step(tg)
+    for piece in ("а" * 4096, "б" * 4096, "в" * 808):
+        await tg.send(text(piece))
+    assert (await tg.only_lead()).form_step == FormStep.REQUEST
+    assert tg.api.last_text().startswith(dialog.REQUEST_TOO_LONG.format(length=9000))
+
+
+@pytest.mark.parametrize("gap", [3, 10])
+async def test_short_request_after_a_rejected_long_one_is_accepted(tg, gap):
+    await reach_request_step(tg)
+    await tg.send(text("а" * 4096, date=MESSAGE_DATE))
+    await tg.send(text("Нужна реклама кофейни", date=MESSAGE_DATE + gap))
+    lead = await tg.only_lead()
+    assert lead.request == "Нужна реклама кофейни"
+    assert lead.form_step == FormStep.CONFIRM
 
 
 async def test_request_of_exactly_1000_chars_is_accepted(tg):
-    await tg.send(text("/start"))
-    await tg.send(text("Анна"))
-    await tg.send(text("@anna_tg"))
+    await reach_request_step(tg)
     await tg.send(text("а" * 1000))
     lead = await tg.only_lead()
+    assert lead.request == "а" * 1000
     assert lead.form_step == FormStep.CONFIRM
     assert button_data(tg.api.last_markup()) == [dialog.CB_SEND, dialog.CB_EDIT]
 
