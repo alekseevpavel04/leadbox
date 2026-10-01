@@ -1,4 +1,4 @@
-# Render Blueprint: one free web service in Frankfurt (closest to Neon eu-central-1).
+# Render Blueprint: one free web service in Frankfurt.
 services:
   - type: web
     name: leadbox
@@ -6,8 +6,28 @@ services:
     plan: free
     region: frankfurt
     buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn leadbox.main:app --app-dir src --host 0.0.0.0 --port $PORT
+    # Migrations run on start: the free plan has no pre-deploy command, and `upgrade head` is a no-op when current.
+    startCommand: alembic upgrade head && uvicorn leadbox.main:app --app-dir src --host 0.0.0.0 --port $PORT
     healthCheckPath: /healthz
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.4
+      - key: BOT_MODE
+        value: webhook
+      # Secrets are set in the Render dashboard, not here.
+      - key: BOT_TOKEN
+        sync: false
+      - key: MANAGER_CHAT_ID
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: PUBLIC_BASE_URL
+        sync: false
+      - key: WEBHOOK_SECRET
+        sync: false
+      - key: SESSION_SECRET
+        sync: false
+      - key: CRM_USER
+        sync: false
+      - key: CRM_PASSWORD
+        sync: false
